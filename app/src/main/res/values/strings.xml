@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">KienLDMBTVN</string>
+
+    <string name="style_prompt_entry">Enter your prompt</string>
 </resources>
