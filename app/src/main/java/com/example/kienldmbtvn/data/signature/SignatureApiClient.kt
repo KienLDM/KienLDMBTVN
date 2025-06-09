@@ -7,12 +7,13 @@ import java.util.concurrent.TimeUnit
 
 object SignatureApiClient {
     private const val BASE_URL = "https://image-generator.dev.apero.vn/"
+    private const val TIMEOUT_MILLIS = 60000L
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+            .readTimeout(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+            .writeTimeout(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
             .build()
     }
 
