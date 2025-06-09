@@ -6,7 +6,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object StyleApiClient {
-    private const val BASE_URL = "https://style-management-api.dev.apero.vn/"
+    private const val BASE_URL = "https://api-style-manager.apero.vn/"
 
     private const val TIMEOUT_MILLIS = 60000L
 
