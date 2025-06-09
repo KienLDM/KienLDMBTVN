@@ -1,7 +1,7 @@
-package com.example.kienldmbtvn.ui.data.style
+package com.example.kienldmbtvn.data.style
 
-import com.example.kienldmbtvn.ui.data.ApiConst
-import com.example.kienldmbtvn.ui.data.response.StyleResponse
+import com.example.kienldmbtvn.data.ApiConst
+import com.example.kienldmbtvn.data.response.StyleResponse
 import retrofit2.Response
 import retrofit2.http.GET
 

@@ -1,13 +1,12 @@
-package com.example.kienldmbtvn.ui.data.style
+package com.example.kienldmbtvn.data.generate
 
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-object StyleApiClient {
-    private const val BASE_URL = "https://style-management-api.dev.apero.vn/v2/"
-
+object GenerateApiClient {
+    private const val BASE_URL = "https://image-generator.dev.apero.vn/"
     private const val TIMEOUT_MILLIS = 60000L
 
     private val okHttpClient by lazy {
@@ -26,7 +25,7 @@ object StyleApiClient {
             .build()
     }
 
-    val api: StyleApiService by lazy {
-        retrofit.create(StyleApiService::class.java)
+    val api: GenerateApiService by lazy {
+        retrofit.create(GenerateApiService::class.java)
     }
 }

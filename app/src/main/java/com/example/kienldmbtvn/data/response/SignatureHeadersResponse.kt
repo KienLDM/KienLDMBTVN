@@ -1,4 +1,4 @@
-package com.example.kienldmbtvn.ui.data.response
+package com.example.kienldmbtvn.data.response
 
 data class SignatureHeaders(
     val signature: String,

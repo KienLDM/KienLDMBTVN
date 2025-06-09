@@ -1,4 +1,4 @@
-package com.example.kienldmbtvn.ui.data.signature
+package com.example.kienldmbtvn.data.signature
 
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
