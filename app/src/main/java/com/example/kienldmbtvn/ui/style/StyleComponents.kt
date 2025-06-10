@@ -1,5 +1,12 @@
 package com.example.kienldmbtvn.ui.style
 
+import android.widget.Toast
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,11 +25,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -77,6 +89,8 @@ fun CategoryLazyRow(
     selectedCategoryId: String? = null,
     onCategorySelected: (CategoryItem) -> Unit = {}
 ) {
+    val context = LocalContext.current
+
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
@@ -84,18 +98,11 @@ fun CategoryLazyRow(
         horizontalArrangement = Arrangement.spacedBy(11.dp),
     ) {
         if (isLoading) {
-            /*                item {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }*/
+            items (5){
+                ShimmerStyleCard(isCategory = true)
+            }
         } else if (categoryError != null) {
-            /*                item {
-                                Text(
-                                    text = "Error: $categoryError",
-                                    color = Color.Red
-                                )
-                            }*/
+            Toast.makeText(context, categoryError, Toast.LENGTH_SHORT).show()
         } else {
             items(categories) { category ->
                 val isCategorySelected = selectedCategoryId == category.id
@@ -124,6 +131,8 @@ fun StyleLazyRow(
     selectedStyle: StyleItem? = null,
     onStyleSelected: (StyleItem) -> Unit = {},
 ) {
+    val context = LocalContext.current
+
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,18 +140,11 @@ fun StyleLazyRow(
         horizontalArrangement = Arrangement.spacedBy(11.dp),
     ) {
         if (isLoading) {
-            /*                item {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(40.dp)
-                                )
-                            }*/
+            items(5) {
+                ShimmerStyleCard(isCategory = false)
+            }
         } else if (styleError != null) {
-            /*                item {
-                                Text(
-                                    text = "Error: ${uiState.styleError}",
-                                    color = Color.Red
-                                )
-                            }*/
+            Toast.makeText(context, styleError, Toast.LENGTH_SHORT).show()
         } else {
             items(styles) { style ->
                 StyleCard(
@@ -153,6 +155,58 @@ fun StyleLazyRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun ShimmerStyleCard(
+    isCategory: Boolean = false
+) {
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1200,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer"
+    )
+
+    val shimmerColors = listOf(
+        Color.LightGray.copy(alpha = 0.6f),
+        Color.LightGray.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.6f),
+    )
+
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(translateAnim, translateAnim),
+        end = Offset(translateAnim + 100f, translateAnim + 100f),
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        if (!isCategory) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(brush)
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .height(16.dp)
+                .width(60.dp)
+                .background(brush)
+        )
     }
 }
 
@@ -205,6 +259,7 @@ fun StyleCard(
     }
 }
 
+//TODO dung snack bar
 @Composable
 fun NoInternetBanner(
     modifier: Modifier = Modifier,

@@ -18,6 +18,8 @@ class StyleViewModel(
     private val _uiState = MutableStateFlow(StyleUiState())
     val uiState: StateFlow<StyleUiState> = _uiState
 
+    private var allStyles: List<StyleItem> = emptyList()
+
     init {
         fetchStyles()
         fetchCategories()
@@ -28,9 +30,10 @@ class StyleViewModel(
             _uiState.update { it.copy(isStyleLoading = true) }
             styleRepository.getStyles()
                 .onSuccess { styles ->
+                    allStyles = styles
                     _uiState.update {
                         it.copy(
-                            styles = styles,
+                            styles = filterStylesByCategory(it.selectedCategory, styles),
                             isStyleLoading = false,
                             styleError = null
                         )
@@ -73,11 +76,32 @@ class StyleViewModel(
         }
     }
 
+    fun filterStylesByCategory(category: CategoryItem?, styles: List<StyleItem>): List<StyleItem> {
+        return if (category == null) {
+            styles
+        } else {
+            styles.filter { style ->
+                style.categories.contains(category.id)
+            }
+        }
+    }
+
     fun selectStyle(style: StyleItem) {
         _uiState.update { it.copy(selectedStyle = style) }
     }
 
     fun selectCategory(category: CategoryItem) {
-        _uiState.update { it.copy(selectedCategory = category) }
+        _uiState.update { currentState ->
+            val filteredStyles = filterStylesByCategory(category, allStyles)
+            currentState.copy(
+                selectedCategory = category,
+                styles = filteredStyles,
+                selectedStyle = if (filteredStyles.contains(currentState.selectedStyle)) {
+                    currentState.selectedStyle
+                } else {
+                    null
+                }
+            )
+        }
     }
 }

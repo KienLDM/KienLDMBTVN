@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,14 +65,34 @@ fun StyleContents(
                         color = LocalCustomColors.current.promptTextColor
                     )
                 },
-                singleLine = false,
+                textStyle = LocalCustomTypography.current.PromptTypoGraphy.regular.copy(
+                    color = LocalCustomColors.current.normalTextColor
+                ),
+                minLines = 3,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 27.dp),
+                    .padding(vertical = 27.dp)
+                    .border(
+                        width = 2.dp,
+                        color = LocalCustomColors.current.primaryBorderColor,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                trailingIcon = {
+                    IconButton(
+                        onClick = { text = "" },
+                        modifier = Modifier.padding(bottom = 45.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_close),
+                            contentDescription = "Clear text",
+                        )
+                    }
+                },
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = LocalCustomColors.current.primaryBorderColor,
-                    unfocusedBorderColor = LocalCustomColors.current.primaryBorderColor
+                    unfocusedBorderColor = LocalCustomColors.current.primaryBorderColor,
+                    cursorColor = LocalCustomColors.current.normalTextColor
                 )
             )
 
@@ -77,7 +100,11 @@ fun StyleContents(
                 modifier = Modifier
                     .size(380.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .border(2.dp, LocalCustomColors.current.primaryBorderColor, shape = RoundedCornerShape(16.dp))
+                    .border(
+                        2.dp,
+                        LocalCustomColors.current.primaryBorderColor,
+                        shape = RoundedCornerShape(16.dp)
+                    )
             ) {
                 AsyncImage(
                     model = imageUri,
