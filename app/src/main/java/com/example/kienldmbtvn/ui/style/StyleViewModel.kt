@@ -8,17 +8,15 @@ import com.example.kienldmbtvn.data.response.StyleItem
 import com.example.kienldmbtvn.data.style.StyleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class StyleViewModel(
     private val styleRepository: StyleRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<StyleUiState>(StyleUiState.Loading)
+    private val _uiState = MutableStateFlow(StyleUiState())
     val uiState: StateFlow<StyleUiState> = _uiState
-
-    private val _categoryUiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Loading)
-    val categoryUiState: StateFlow<CategoryUiState> = _categoryUiState
 
     init {
         fetchStyles()
@@ -27,13 +25,24 @@ class StyleViewModel(
 
     fun fetchStyles() {
         viewModelScope.launch {
-            _uiState.value = StyleUiState.Loading
+            _uiState.update { it.copy(isStyleLoading = true) }
             styleRepository.getStyles()
                 .onSuccess { styles ->
-                    _uiState.value = StyleUiState.Success(styles = styles)
+                    _uiState.update {
+                        it.copy(
+                            styles = styles,
+                            isStyleLoading = false,
+                            styleError = null
+                        )
+                    }
                 }
                 .onFailure { error ->
-                    _uiState.value = StyleUiState.Error("Network error: ${error.message ?: "Unknown error"}")
+                    _uiState.update {
+                        it.copy(
+                            isStyleLoading = false,
+                            styleError = "Network error: ${error.message ?: "Unknown error"}"
+                        )
+                    }
                     Log.d("StyleViewModel", "Network error: ${error.message}")
                 }
         }
@@ -41,45 +50,34 @@ class StyleViewModel(
 
     fun fetchCategories() {
         viewModelScope.launch {
-            _categoryUiState.value = CategoryUiState.Loading
+            _uiState.update { it.copy(isCategoryLoading = true) }
             styleRepository.getItems()
                 .onSuccess { categories ->
-                    _categoryUiState.value = CategoryUiState.Success(categories = categories)
+                    _uiState.update {
+                        it.copy(
+                            categories = categories,
+                            isCategoryLoading = false,
+                            categoryError = null
+                        )
+                    }
                 }
                 .onFailure { error ->
-                    _categoryUiState.value =
-                        CategoryUiState.Error("Network error: ${error.message ?: "Unknown error"}")
+                    _uiState.update {
+                        it.copy(
+                            isCategoryLoading = false,
+                            categoryError = "Network error: ${error.message ?: "Unknown error"}"
+                        )
+                    }
                     Log.d("StyleViewModel", "Network error: ${error.message}")
                 }
         }
     }
 
     fun selectStyle(style: StyleItem) {
-        val currentState = _uiState.value
-        if (currentState is StyleUiState.Success) {
-            _uiState.value = currentState.copy(selectedStyle = style)
-        }
+        _uiState.update { it.copy(selectedStyle = style) }
     }
 
     fun selectCategory(category: CategoryItem) {
-        val currentState = _categoryUiState.value
-        if (currentState is CategoryUiState.Success) {
-            _categoryUiState.value = currentState.copy(selectedCategory = category)
-        }
+        _uiState.update { it.copy(selectedCategory = category) }
     }
-}
-
-sealed class StyleUiState {
-    object Loading : StyleUiState()
-    data class Success(val styles: List<StyleItem>, val selectedStyle: StyleItem? = null) : StyleUiState()
-    data class Error(val message: String) : StyleUiState()
-}
-
-sealed class CategoryUiState {
-    object Loading : CategoryUiState()
-    data class Success(
-        val categories: List<CategoryItem>,
-        val selectedCategory: CategoryItem? = null
-    ) : CategoryUiState()
-    data class Error(val message: String) : CategoryUiState()
 }
