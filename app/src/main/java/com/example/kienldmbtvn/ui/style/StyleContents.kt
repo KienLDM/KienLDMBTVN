@@ -1,20 +1,26 @@
 package com.example.kienldmbtvn.ui.style
 
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +54,39 @@ fun StyleContents(
     {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         var text by remember { mutableStateOf("") }
+        val snackbarHostState = remember { SnackbarHostState() }
+        val noInternetMessage = stringResource(R.string.no_internet)
+
+        LaunchedEffect(uiState.styleError) {
+            uiState.styleError?.let {
+                snackbarHostState.showSnackbar(
+                    message = noInternetMessage,
+                    withDismissAction = true
+                )
+            }
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(0.dp),
+            snackbar = { snackbarData ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(55.dp)
+                        .background(LocalCustomColors.current.errorBackgroundColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = snackbarData.visuals.message,
+                        color = LocalCustomColors.current.secondaryTextColor,
+                        style = LocalCustomTypography.current.ErrorTypoGraphy.semiBold
+                    )
+                }
+            }
+        )
 
         Column(
             modifier = modifier
@@ -55,46 +94,52 @@ fun StyleContents(
                 .padding(27.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                placeholder = {
-                    Text(
-                        text = stringResource(id = R.string.style_prompt_entry),
-                        style = LocalCustomTypography.current.PromptTypoGraphy.regular,
-                        color = LocalCustomColors.current.promptTextColor
-                    )
-                },
-                textStyle = LocalCustomTypography.current.PromptTypoGraphy.regular.copy(
-                    color = LocalCustomColors.current.normalTextColor
-                ),
-                minLines = 3,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 27.dp)
-                    .border(
-                        width = 2.dp,
-                        color = LocalCustomColors.current.primaryBorderColor,
-                        shape = RoundedCornerShape(16.dp)
-                    ),
-                trailingIcon = {
-                    IconButton(
-                        onClick = { text = "" },
-                        modifier = Modifier.padding(bottom = 45.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_close),
-                            contentDescription = "Clear text",
+            ) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = {
+                        Text(
+                            text = stringResource(id = R.string.style_prompt_entry),
+                            style = LocalCustomTypography.current.PromptTypoGraphy.regular,
+                            color = LocalCustomColors.current.promptTextColor
                         )
-                    }
-                },
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = LocalCustomColors.current.primaryBorderColor,
-                    unfocusedBorderColor = LocalCustomColors.current.primaryBorderColor,
-                    cursorColor = LocalCustomColors.current.normalTextColor
+                    },
+                    textStyle = LocalCustomTypography.current.PromptTypoGraphy.regular.copy(
+                        color = LocalCustomColors.current.normalTextColor
+                    ),
+                    minLines = 3,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 2.dp,
+                            color = LocalCustomColors.current.primaryBorderColor,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .clip(RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = LocalCustomColors.current.primaryBorderColor,
+                        unfocusedBorderColor = LocalCustomColors.current.primaryBorderColor,
+                        cursorColor = LocalCustomColors.current.normalTextColor
+                    ),
                 )
-            )
+
+                IconButton(
+                    onClick = { text = "" },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_close),
+                        contentDescription = "Clear text",
+                    )
+                }
+            }
 
             Box(
                 modifier = Modifier
@@ -149,10 +194,6 @@ fun StyleContents(
                     }
                 }
             )
-        }
-
-        if (uiState.styleError != null) {
-            NoInternetBanner(modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
 }

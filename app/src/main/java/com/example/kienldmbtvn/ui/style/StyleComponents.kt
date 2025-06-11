@@ -258,24 +258,3 @@ fun StyleCard(
         )
     }
 }
-
-//TODO dung snack bar
-@Composable
-fun NoInternetBanner(
-    modifier: Modifier = Modifier,
-    message: String = stringResource(R.string.no_internet)
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .background(LocalCustomColors.current.errorBackgroundColor),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = message,
-            color = LocalCustomColors.current.secondaryTextColor,
-            style = LocalCustomTypography.current.ErrorTypoGraphy.semiBold
-        )
-    }
-}
