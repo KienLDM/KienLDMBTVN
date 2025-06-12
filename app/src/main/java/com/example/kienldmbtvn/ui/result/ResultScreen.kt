@@ -1,4 +1,8 @@
 package com.example.kienldmbtvn.ui.result
 
-class ResultScreen {
+import androidx.navigation.NavHostController
+
+class ResultScreen(
+    navController: NavHostController
+) {
 }

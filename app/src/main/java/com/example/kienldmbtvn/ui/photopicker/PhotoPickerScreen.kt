@@ -1,4 +1,8 @@
 package com.example.kienldmbtvn.ui.photopicker
 
-class PhotoPickerScreen {
+import androidx.navigation.NavHostController
+
+class PhotoPickerScreen(
+    navController: NavHostController
+) {
 }
