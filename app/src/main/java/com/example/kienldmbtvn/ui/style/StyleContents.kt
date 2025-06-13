@@ -3,6 +3,7 @@ package com.example.kienldmbtvn.ui.style
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.kienldmbtvn.R
 import com.example.kienldmbtvn.data.response.StyleItem
@@ -45,6 +47,7 @@ fun StyleContents(
     modifier: Modifier = Modifier,
     imageUri: Uri,
     imageUrl: String,
+    navController: NavHostController? = null,
     viewModel: StyleViewModel = koinViewModel(),
     onGenerate: (StyleItem, String) -> Unit = { _, _ -> }
 ) {
@@ -150,6 +153,7 @@ fun StyleContents(
                         LocalCustomColors.current.primaryBorderColor,
                         shape = RoundedCornerShape(16.dp)
                     )
+                    .clickable()
             ) {
                 AsyncImage(
                     model = imageUri,
