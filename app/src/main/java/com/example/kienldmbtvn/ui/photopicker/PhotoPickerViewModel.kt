@@ -21,10 +21,22 @@ class PhotoPickerViewModel(private val repository: PhotoRepository) : ViewModel(
             }
         }
     }
+
+    fun togglePhotoSelection(photo: Photo) {
+        val currentState = _uiState.value
+        if (currentState is PhotoUiState.Success) {
+            val newSelected = if (currentState.selectedPhoto == photo) {
+                null
+            } else {
+                photo
+            }
+            _uiState.value = currentState.copy(selectedPhoto = newSelected)
+        }
+    }
 }
 
 sealed class PhotoUiState {
     object Loading : PhotoUiState()
-    data class Success(val photos: List<Photo>) : PhotoUiState()
+    data class Success(val photos: List<Photo>, val selectedPhoto: Photo? = null) : PhotoUiState()
     data class Error(val message: String) : PhotoUiState()
 }

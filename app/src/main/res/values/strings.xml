@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">KienLDMBTVN</string>
 
+    <!--Style-->
     <string name="style_prompt_entry">Enter your prompt</string>
     <string name="style_choose">Choose your style</string>
     <string name="style_generate">Generate AI</string>
@@ -8,4 +9,9 @@
     <string name="result_download_photo">Download Photo</string>
     <string name="result_downloading_popup">Downloading...</string>
     <string name="no_internet">No internet connection! Try again later</string>
+
+    <!--PhotoPicker-->
+    <string name="ask_for_permission">Permission required to access photos</string>
+    <string name="next">Next</string>
+
 </resources>
