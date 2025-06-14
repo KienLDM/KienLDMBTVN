@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.kienldmbtvn.ext.hideSystemBar
-import com.example.kienldmbtvn.ui.style.StyleScreen
+import com.example.kienldmbtvn.ui.navigation.AppNavHost
 import com.example.kienldmbtvn.ui.theme.KienLDMBTVNTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             KienLDMBTVNTheme {
-                StyleScreen()
+                AppNavHost()
             }
         }
     }

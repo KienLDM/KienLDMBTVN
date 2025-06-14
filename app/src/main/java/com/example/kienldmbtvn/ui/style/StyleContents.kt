@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +37,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.kienldmbtvn.R
 import com.example.kienldmbtvn.data.response.StyleItem
+import com.example.kienldmbtvn.ui.navigation.AppNavRoutes
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
@@ -47,7 +47,7 @@ fun StyleContents(
     modifier: Modifier = Modifier,
     imageUri: Uri,
     imageUrl: String,
-    navController: NavHostController? = null,
+    navController: NavHostController,
     viewModel: StyleViewModel = koinViewModel(),
     onGenerate: (StyleItem, String) -> Unit = { _, _ -> }
 ) {
@@ -138,7 +138,7 @@ fun StyleContents(
                         .align(Alignment.TopEnd)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_close),
+                        painter = painterResource(R.drawable.ic_delete_prompt),
                         contentDescription = "Clear text",
                     )
                 }
@@ -153,7 +153,9 @@ fun StyleContents(
                         LocalCustomColors.current.primaryBorderColor,
                         shape = RoundedCornerShape(16.dp)
                     )
-                    .clickable()
+                    .clickable {
+                    navController.navigate(AppNavRoutes.PhotoPicker.route)
+                }
             ) {
                 AsyncImage(
                     model = imageUri,

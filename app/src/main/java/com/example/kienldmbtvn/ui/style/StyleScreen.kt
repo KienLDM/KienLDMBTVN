@@ -3,6 +3,7 @@ package com.example.kienldmbtvn.ui.style
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import org.koin.androidx.compose.koinViewModel
 
@@ -10,7 +11,7 @@ import org.koin.androidx.compose.koinViewModel
 fun StyleScreen(
     imageUri: Uri? = null,
     imageUrl: String = " ",
-    navController: NavHostController? = null,
+    navController: NavHostController,
     viewModel: StyleViewModel = koinViewModel()
 ) {
     StyleContents(
@@ -21,8 +22,8 @@ fun StyleScreen(
     )
 }
 
-@Preview
-@Composable
-private fun StyleScreenPreview() {
-    StyleScreen()
-}
+//@Preview
+//@Composable
+//private fun StyleScreenPreview() {
+//    StyleScreen()
+//}
