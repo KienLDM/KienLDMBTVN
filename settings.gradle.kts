@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "KienLDMBTVN"
 include(":app")
- 
+include(":common")
