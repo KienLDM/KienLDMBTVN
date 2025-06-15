@@ -31,13 +31,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.kienldmbtvn.R
 import com.example.kienldmbtvn.data.response.StyleItem
-import com.example.kienldmbtvn.ui.navigation.AppNavRoutes
+import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
@@ -47,6 +48,7 @@ fun StyleContents(
     modifier: Modifier = Modifier,
     imageUri: Uri,
     imageUrl: String,
+    isImageSelected: Boolean,
     navController: NavHostController,
     viewModel: StyleViewModel = koinViewModel(),
     onGenerate: (StyleItem, String) -> Unit = { _, _ -> }
@@ -112,9 +114,7 @@ fun StyleContents(
                             color = LocalCustomColors.current.promptTextColor
                         )
                     },
-                    textStyle = LocalCustomTypography.current.PromptTypoGraphy.regular.copy(
-                        color = LocalCustomColors.current.normalTextColor
-                    ),
+                    textStyle = LocalCustomTypography.current.PromptTypoGraphy.regular,
                     minLines = 3,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -153,18 +153,65 @@ fun StyleContents(
                         LocalCustomColors.current.primaryBorderColor,
                         shape = RoundedCornerShape(16.dp)
                     )
-                    .clickable {
-                    navController.navigate(AppNavRoutes.PhotoPicker.route)
-                }
             ) {
-                AsyncImage(
-                    model = imageUri,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(16.dp)),
-                    contentScale = ContentScale.Crop,
-                )
+                if (isImageSelected) {
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(16.dp)),
+                            contentScale = ContentScale.Fit,
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(24.dp)
+                                .clip(RoundedCornerShape(100.dp))
+                                .background(LocalCustomColors.current.primaryBorderColor.copy(0.7f))
+                        ) {
+                            IconButton(
+                                onClick = { AppNavigationHandler.navigateToPhotoPicker(navController) },
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.ic_rechoose_image),
+                                    contentDescription = null,
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                AppNavigationHandler.navigateToPhotoPicker(navController)
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_add_photo),
+                                contentDescription = "Add photo",
+                                tint = LocalCustomColors.current.promptTextColor,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.add_your_photo),
+                                color = LocalCustomColors.current.promptTextColor,
+                                style = LocalCustomTypography.current.PromptTypoGraphy.regular,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                }
             }
 
             Text(

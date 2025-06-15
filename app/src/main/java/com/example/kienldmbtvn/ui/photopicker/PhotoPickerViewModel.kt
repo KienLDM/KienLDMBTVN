@@ -1,5 +1,6 @@
 package com.example.kienldmbtvn.ui.photopicker
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,13 @@ class PhotoPickerViewModel(private val repository: PhotoRepository) : ViewModel(
                 photo
             }
             _uiState.value = currentState.copy(selectedPhoto = newSelected)
+        }
+    }
+
+    fun getSelectedPhotoUri(): Uri? {
+        return when (val state = _uiState.value) {
+            is PhotoUiState.Success -> state.selectedPhoto?.uri
+            else -> null
         }
     }
 }

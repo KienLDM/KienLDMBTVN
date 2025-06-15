@@ -9,9 +9,11 @@
     <string name="result_download_photo">Download Photo</string>
     <string name="result_downloading_popup">Downloading...</string>
     <string name="no_internet">No internet connection! Try again later</string>
+    <string name="add_your_photo">Add your photo</string>
 
     <!--PhotoPicker-->
     <string name="ask_for_permission">Permission required to access photos</string>
     <string name="next">Next</string>
+    <string name="no_photos_found">No photos found</string>
 
 </resources>
