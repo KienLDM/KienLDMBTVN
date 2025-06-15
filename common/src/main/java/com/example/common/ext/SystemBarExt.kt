@@ -1,4 +1,4 @@
-package com.example.kienldmbtvn.ext
+package com.example.common.ext
 
 import android.app.Activity
 import android.os.Build
@@ -10,7 +10,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
-import com.example.kienldmbtvn.enumclass.TypeInsets
+import com.example.common.enumclass.TypeInsets
 
 internal fun Activity.hideSystemBar(
     hideStatusBar: Boolean = true,

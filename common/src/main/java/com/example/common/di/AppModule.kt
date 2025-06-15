@@ -1,12 +1,11 @@
-package com.example.kienldmbtvn.di
+package com.example.common.di
 
+import com.example.common.data.photo.PhotoRepository
 import com.example.kienldmbtvn.data.style.StyleApiClient
 import com.example.kienldmbtvn.data.style.StyleApiService
 import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.style.StyleRepositoryImpl
-import com.example.kienldmbtvn.ui.style.StyleViewModel
-import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
-import com.example.kienldmbtvn.ui.photopicker.PhotoRepository
+import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 

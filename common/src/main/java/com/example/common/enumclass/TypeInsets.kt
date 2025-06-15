@@ -1,4 +1,4 @@
-package com.example.kienldmbtvn.enumclass
+package com.example.common.enumclass
 
 internal enum class TypeInsets {
     StatusBar,
