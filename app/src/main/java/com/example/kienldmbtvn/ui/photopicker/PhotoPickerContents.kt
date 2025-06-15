@@ -21,7 +21,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +38,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.ui.navigation.AppNavRoutes
+import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
+import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
 
@@ -91,10 +91,10 @@ fun PhotoPickerContents(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { AppNavigationHandler.goBack(navController) }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_close_photo_picker),
-                            contentDescription = "Close"
+                            contentDescription = null,
                         )
                     }
 
@@ -102,7 +102,8 @@ fun PhotoPickerContents(
                         text = stringResource(R.string.next),
                         style = LocalCustomTypography.current.ButtonTypoGraphy.bold,
                         modifier = Modifier.clickable {
-                            navController.navigate(AppNavRoutes.Result.route)
+                            val selectedPhotoUri = viewModel.getSelectedPhotoUri()
+                            AppNavigationHandler.setImageUriAndNavigateBack(navController, selectedPhotoUri)
                         }
                     )
                 }
@@ -122,7 +123,7 @@ fun PhotoPickerContents(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("No photos found")
+                                Text(stringResource(R.string.no_photos_found))
                             }
                         } else {
                             LazyVerticalGrid(
@@ -167,8 +168,8 @@ fun PhotoPickerContents(
                         ) {
                             Text(
                                 text = state.message,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error
+                                style = LocalCustomTypography.current.Title.bold,
+                                color = LocalCustomColors.current.errorBackgroundColor
                             )
                         }
                     }
