@@ -39,8 +39,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.data.response.CategoryItem
-import com.example.kienldmbtvn.data.response.StyleItem
+import com.example.kienldmbtvn.data.network.response.CategoryItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 

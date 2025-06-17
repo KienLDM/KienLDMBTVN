@@ -1,18 +1,25 @@
 package com.example.kienldmbtvn.ui.style
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kienldmbtvn.data.response.CategoryItem
-import com.example.kienldmbtvn.data.response.StyleItem
+import com.example.kienldmbtvn.base.BaseUIState
+import com.example.kienldmbtvn.data.network.response.CategoryItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.data.style.StyleRepository
+import com.example.kienldmbtvn.data.AiArtRepository
+import com.example.kienldmbtvn.data.exception.AiArtException
+import com.example.kienldmbtvn.data.params.AiArtParams
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class StyleViewModel(
-    private val styleRepository: StyleRepository
+    private val styleRepository: StyleRepository,
+    private val aiArtRepository: AiArtRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StyleUiState())
@@ -23,6 +30,18 @@ class StyleViewModel(
     init {
         fetchStyles()
         fetchCategories()
+    }
+
+    private fun updateState(update: (StyleUiState) -> StyleUiState) {
+        _uiState.update(update)
+    }
+
+    fun updatePrompt(newPrompt: String) {
+        updateState { it.copy(prompt = newPrompt) }
+    }
+
+    fun updateImageUrl(imageUri: Uri?) {
+        updateState { it.copy(imageUrl = imageUri) }
     }
 
     fun fetchStyles() {
@@ -100,6 +119,51 @@ class StyleViewModel(
                     currentState.selectedStyle
                 } else {
                     null
+                }
+            )
+        }
+    }
+
+    fun generateImage(context: Context, onSuccess: (resultUrl: String) -> Unit) {
+        updateState {
+            it.copy(generatingState = BaseUIState.Loading)
+        }
+        viewModelScope.launch {
+            val uiStateValue = uiState.value
+            if (uiStateValue.imageUrl == null) {
+                updateState {
+                    it.copy(generatingState = BaseUIState.Error("Image is required"))
+                }
+                return@launch
+            }
+            if (uiStateValue.selectedStyle == null) {
+                updateState {
+                    it.copy(generatingState = BaseUIState.Error("Style is required"))
+                }
+                return@launch
+            }
+            val genResult = aiArtRepository.genArtAi(
+                params = AiArtParams(
+                    prompt = uiStateValue.prompt,
+                    styleId = uiStateValue.selectedStyle.id,
+                    positivePrompt = uiStateValue.prompt,
+                    negativePrompt = uiStateValue.prompt,
+                    imageUri = uiStateValue.imageUrl
+                )
+            )
+            genResult.fold(
+                onSuccess = { fileUrl ->
+                    updateState {
+                        it.copy(generatingState = BaseUIState.Success(fileUrl))
+                    }
+                    onSuccess(fileUrl)
+                },
+                onFailure = { error ->
+                    val message =
+                        if (error is AiArtException) context.getString(error.errorReason.resMessage) else com.example.kienldmbtvn.data.network.consts.ServiceConstants.UNKNOWN_ERROR_MESSAGE
+                    updateState {
+                        it.copy(generatingState = BaseUIState.Error(message))
+                    }
                 }
             )
         }

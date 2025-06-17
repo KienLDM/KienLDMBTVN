@@ -37,7 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.data.response.StyleItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography

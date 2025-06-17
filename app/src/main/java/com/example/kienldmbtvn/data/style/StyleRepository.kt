@@ -1,7 +1,7 @@
 package com.example.kienldmbtvn.data.style
 
-import com.example.kienldmbtvn.data.response.CategoryItem
-import com.example.kienldmbtvn.data.response.StyleItem
+import com.example.kienldmbtvn.data.network.response.CategoryItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

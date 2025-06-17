@@ -1,7 +1,9 @@
 package com.example.kienldmbtvn.ui.style
 
-import com.example.kienldmbtvn.data.response.CategoryItem
-import com.example.kienldmbtvn.data.response.StyleItem
+import android.net.Uri
+import com.example.kienldmbtvn.base.BaseUIState
+import com.example.kienldmbtvn.data.network.response.CategoryItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 
 data class StyleUiState(
     val styles: List<StyleItem> = emptyList(),
@@ -12,5 +14,9 @@ data class StyleUiState(
     val categories: List<CategoryItem> = emptyList(),
     val selectedCategory: CategoryItem? = null,
     val isCategoryLoading: Boolean = false,
-    val categoryError: String? = null
+    val categoryError: String? = null,
+
+    val prompt: String = "",
+    val imageUrl: Uri? = null,
+    val generatingState: BaseUIState<String> = BaseUIState.Idle
 )
