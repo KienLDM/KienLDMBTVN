@@ -1,4 +1,4 @@
-package com.example.kienldmbtvn.data.response
+package com.example.kienldmbtvn.data.network.response
 
 import com.google.gson.annotations.SerializedName
 

@@ -1,20 +1,39 @@
 package com.example.kienldmbtvn.di
 
-import com.example.kienldmbtvn.data.style.StyleApiClient
+import com.example.kienldmbtvn.data.AiArtRepository
+import com.example.kienldmbtvn.data.impl.AiArtRepositoryImpl
+import com.example.kienldmbtvn.data.network.ApiClient
+import com.example.kienldmbtvn.data.network.service.AiArtService
+import com.example.kienldmbtvn.data.network.service.TimeStampService
 import com.example.kienldmbtvn.data.style.StyleApiService
 import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.style.StyleRepositoryImpl
-import com.example.kienldmbtvn.ui.style.StyleViewModel
 import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
 import com.example.kienldmbtvn.ui.photopicker.PhotoRepository
-import org.koin.core.module.dsl.viewModelOf
+import com.example.kienldmbtvn.ui.style.StyleViewModel
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule = module {
-    single<StyleApiService> { StyleApiClient.api }
-    single<StyleRepository> { StyleRepositoryImpl(get()) }
-    viewModelOf(::StyleViewModel)
-
-    single { PhotoRepository(get()) }
-    viewModelOf(::PhotoPickerViewModel)
+internal val serviceModule = module {
+    single<AiArtService> { ApiClient.getAiArtService() }
+    single<TimeStampService> { ApiClient.getTimeStampService() }
+    single<StyleApiService> { ApiClient.getStyleService() }
 }
+
+internal val repositoryModule = module {
+    single<AiArtRepository> { AiArtRepositoryImpl(androidContext(), get(), get()) }
+    single<StyleRepository> { StyleRepositoryImpl(get()) }
+    single { PhotoRepository(androidContext()) }
+}
+
+internal val viewModelModule = module {
+    viewModel { StyleViewModel(get(), get()) }
+    viewModel { PhotoPickerViewModel(get()) }
+}
+
+val appModule = listOf(
+    serviceModule,
+    repositoryModule,
+    viewModelModule
+)

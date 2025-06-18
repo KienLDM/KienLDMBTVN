@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -28,7 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -36,8 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import android.util.Log
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.data.response.StyleItem
+import com.example.kienldmbtvn.base.BaseUIState
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
@@ -53,6 +58,10 @@ fun StyleContents(
     viewModel: StyleViewModel = koinViewModel(),
     onGenerate: (StyleItem, String) -> Unit = { _, _ -> }
 ) {
+    // Update the imageUri in the ViewModel to ensure it's available for API calls
+    LaunchedEffect(imageUri) {
+        viewModel.updateImageUrl(imageUri)
+    }
     Box(
         modifier = Modifier.fillMaxSize()
     )
@@ -61,6 +70,7 @@ fun StyleContents(
         var text by remember { mutableStateOf("") }
         val snackbarHostState = remember { SnackbarHostState() }
         val noInternetMessage = stringResource(R.string.no_internet)
+        val context = LocalContext.current
 
         LaunchedEffect(uiState.styleError) {
             uiState.styleError?.let {
@@ -239,14 +249,54 @@ fun StyleContents(
                 onStyleSelected = { viewModel.selectStyle(it) }
             )
 
-            GenerateButton(
+            CommonButton(
+                textContent = R.string.style_generate,
                 isEnabled = uiState.selectedStyle != null,
+                isLoading = uiState.generatingState.isLoading(),
                 onGenerate = {
-                    uiState.selectedStyle?.let { selectedStyle ->
-                        onGenerate(selectedStyle, text)
+                    uiState.selectedStyle?.let {
+                        viewModel.updatePrompt(text)
+                        viewModel.generateImage(context = context) { resultUrl ->
+                            AppNavigationHandler.navigateToResult(navController, resultUrl)
+                        }
                     }
                 }
             )
+        }
+        
+        if (uiState.generatingState.isLoading()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(50.dp),
+                        color = LocalCustomColors.current.primaryTextColor,
+                        strokeWidth = 4.dp
+                    )
+                    Text(
+                        text = "Generating your AI art...",
+                        color = Color.White,
+                        style = LocalCustomTypography.current.PromptTypoGraphy.semiBold,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                }
+            }
+        }
+        
+        if (uiState.generatingState.isError()) {
+            LaunchedEffect(uiState.generatingState) {
+                val errorMessage = (uiState.generatingState as BaseUIState.Error).message
+                snackbarHostState.showSnackbar(
+                    message = errorMessage,
+                    withDismissAction = true
+                )
+            }
         }
     }
 }
