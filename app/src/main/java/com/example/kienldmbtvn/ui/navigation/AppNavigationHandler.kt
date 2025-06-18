@@ -15,12 +15,8 @@ object AppNavigationHandler {
         navController.navigate(AppNavRoutes.Style.route)
     }
 
-    fun navigateToResult(navController: NavController) {
-        navController.navigate(AppNavRoutes.Result.route)
-    }
-
-    fun navigateToDetail(navController: NavController, id: String) {
-        navController.navigate(AppNavRoutes.Detail(id).route)
+    fun navigateToResult(navController: NavController, imageUrl: String) {
+        navController.navigate(AppNavRoutes.Result.createRoute(imageUrl))
     }
 
     fun goBack(navController: NavController) {

@@ -45,12 +45,14 @@ import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 
 @Composable
-fun GenerateButton(
+fun CommonButton(
     modifier: Modifier = Modifier,
+    textContent: Int,
     isEnabled: Boolean = true,
+    isLoading: Boolean = false,
     onGenerate: () -> Unit,
 ) {
-    val backgroundModifier = if (isEnabled) {
+    val backgroundModifier = if (isEnabled && !isLoading) {
         Modifier.background(
             brush = LocalCustomColors.current.buttonBackground,
             shape = RoundedCornerShape(8.dp)
@@ -74,9 +76,9 @@ fun GenerateButton(
             containerColor = Color.Transparent,
             contentColor = Color.White,
         ),
-        enabled = isEnabled
+        enabled = isEnabled && !isLoading
     ) {
-        Text(stringResource(R.string.style_generate))
+        Text(stringResource(textContent))
     }
 }
 
@@ -257,4 +259,9 @@ fun StyleCard(
             modifier = Modifier.padding(top = 4.dp)
         )
     }
+}
+
+@Composable
+fun FloatingLoadingState(modifier: Modifier = Modifier) {
+
 }

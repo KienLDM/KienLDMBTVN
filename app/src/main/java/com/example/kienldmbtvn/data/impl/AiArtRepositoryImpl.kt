@@ -9,6 +9,7 @@ import com.example.kienldmbtvn.data.exception.ErrorReason
 import com.example.kienldmbtvn.data.network.request.AiArtRequest
 import com.example.kienldmbtvn.data.params.AiArtParams
 import com.example.kienldmbtvn.data.network.response.Data
+import com.example.kienldmbtvn.data.network.service.AiArtService
 import com.example.kienldmbtvn.data.style.StyleApiService
 import com.example.kienldmbtvn.data.utils.FileUtils
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -16,8 +17,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 
 class AiArtRepositoryImpl(
     private val context: Context,
-    private val aiArtService: com.example.kienldmbtvn.data.network.service.AiArtService,
-    private val timeStampService: com.example.kienldmbtvn.data.network.service.TimeStampService,
+    private val aiArtService: AiArtService,
     private val styleService: StyleApiService
 ) : AiArtRepository {
     companion object {
@@ -43,13 +43,30 @@ class AiArtRepositoryImpl(
                 "image_${System.currentTimeMillis()}.jpg"
             )
             Log.d(TAG, "genArtAi: imageFile ${imageFile.absolutePath}")
-            val presignedLinkResponse = aiArtService.getLink().body()
-            val presignedLink = presignedLinkResponse?.data
-                ?: return Result.failure(
-                    AiArtException(ErrorReason.PresignedLinkError)
-                )
+            
+            val presignedLinkResponse = aiArtService.getLink()
+            Log.d(TAG, "genArtAi: presignedLink response code: ${presignedLinkResponse.code()}")
+            
+            if (!presignedLinkResponse.isSuccessful) {
+                Log.e(TAG, "genArtAi: Failed to get presigned link - HTTP ${presignedLinkResponse.code()}: ${presignedLinkResponse.message()}")
+                Log.e(TAG, "genArtAi: Error body: ${presignedLinkResponse.errorBody()?.string()}")
+                return Result.failure(AiArtException(ErrorReason.PresignedLinkError))
+            }
+            
+            val presignedLinkResponseBody = presignedLinkResponse.body()
+            if (presignedLinkResponseBody == null) {
+                Log.e(TAG, "genArtAi: Presigned link response body is null")
+                return Result.failure(AiArtException(ErrorReason.PresignedLinkError))
+            }
+            
+            val presignedLink = presignedLinkResponseBody.data
+            if (presignedLink == null) {
+                Log.e(TAG, "genArtAi: Presigned link data is null")
+                return Result.failure(AiArtException(ErrorReason.PresignedLinkError))
+            }
+            
             Log.d(TAG, "genArtAi: presignedLink ${presignedLink.path}")
-            AiArtServiceEntry.setTimeStamp(presignedLinkResponse.timestamp)
+            AiArtServiceEntry.setTimeStamp(presignedLinkResponseBody.timestamp)
             val pushToServer = aiArtService.pushImageToServer(
                 url = presignedLink.url,
                 file = imageFile.asRequestBody("image/jpeg".toMediaTypeOrNull()),

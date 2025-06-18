@@ -11,6 +11,8 @@ import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.AiArtRepository
 import com.example.kienldmbtvn.data.exception.AiArtException
+import com.example.kienldmbtvn.data.exception.ErrorReason
+import com.example.kienldmbtvn.data.network.consts.ServiceConstants
 import com.example.kienldmbtvn.data.params.AiArtParams
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -157,10 +159,33 @@ class StyleViewModel(
                         it.copy(generatingState = BaseUIState.Success(fileUrl))
                     }
                     onSuccess(fileUrl)
+                    updateState {
+                        it.copy(generatingState = BaseUIState.Idle)
+                    }
                 },
                 onFailure = { error ->
-                    val message =
-                        if (error is AiArtException) context.getString(error.errorReason.resMessage) else com.example.kienldmbtvn.data.network.consts.ServiceConstants.UNKNOWN_ERROR_MESSAGE
+                    val message = when (error) {
+                        is AiArtException -> {
+                            when (error.errorReason) {
+                                ErrorReason.PresignedLinkError -> {
+                                    "Network error: Failed to get upload link. Please check your internet connection and try again."
+                                }
+                                ErrorReason.NetworkError -> {
+                                    "Network error: Please check your internet connection and try again."
+                                }
+                                ErrorReason.ImageTypeInvalid -> {
+                                    "Invalid image format. Please select a valid image file."
+                                }
+                                ErrorReason.GenerateImageError -> {
+                                    "Image generation failed. Please try again."
+                                }
+                                else -> context.getString(error.errorReason.resMessage)
+                            }
+                        }
+                        else -> {
+                            error.message ?: ServiceConstants.UNKNOWN_ERROR_MESSAGE
+                        }
+                    }
                     updateState {
                         it.copy(generatingState = BaseUIState.Error(message))
                     }
