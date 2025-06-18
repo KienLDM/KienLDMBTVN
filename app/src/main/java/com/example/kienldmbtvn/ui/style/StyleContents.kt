@@ -39,9 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import android.util.Log
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.base.BaseUIState
 import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
@@ -52,13 +50,11 @@ import org.koin.androidx.compose.koinViewModel
 fun StyleContents(
     modifier: Modifier = Modifier,
     imageUri: Uri,
-    imageUrl: String,
     isImageSelected: Boolean,
     navController: NavHostController,
     viewModel: StyleViewModel = koinViewModel(),
     onGenerate: (StyleItem, String) -> Unit = { _, _ -> }
 ) {
-    // Update the imageUri in the ViewModel to ensure it's available for API calls
     LaunchedEffect(imageUri) {
         viewModel.updateImageUrl(imageUri)
     }
@@ -252,7 +248,7 @@ fun StyleContents(
             CommonButton(
                 textContent = R.string.style_generate,
                 isEnabled = uiState.selectedStyle != null,
-                isLoading = uiState.generatingState.isLoading(),
+                isLoading = uiState.generatingState is StyleDataState.Loading,
                 onGenerate = {
                     uiState.selectedStyle?.let {
                         viewModel.updatePrompt(text)
@@ -264,7 +260,7 @@ fun StyleContents(
             )
         }
         
-        if (uiState.generatingState.isLoading()) {
+        if (uiState.generatingState is StyleDataState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -289,9 +285,9 @@ fun StyleContents(
             }
         }
         
-        if (uiState.generatingState.isError()) {
+        if (uiState.generatingState is StyleDataState.Error) {
             LaunchedEffect(uiState.generatingState) {
-                val errorMessage = (uiState.generatingState as BaseUIState.Error).message
+                val errorMessage = (uiState.generatingState as StyleDataState.Error).message
                 snackbarHostState.showSnackbar(
                     message = errorMessage,
                     withDismissAction = true

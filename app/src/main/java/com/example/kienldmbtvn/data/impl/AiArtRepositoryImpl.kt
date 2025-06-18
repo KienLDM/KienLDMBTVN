@@ -6,10 +6,11 @@ import com.example.kienldmbtvn.data.AiArtRepository
 import com.example.kienldmbtvn.data.AiArtServiceEntry
 import com.example.kienldmbtvn.data.exception.AiArtException
 import com.example.kienldmbtvn.data.exception.ErrorReason
+import com.example.kienldmbtvn.data.network.consts.ServiceConstants.RequestConstants
 import com.example.kienldmbtvn.data.network.request.AiArtRequest
-import com.example.kienldmbtvn.data.params.AiArtParams
 import com.example.kienldmbtvn.data.network.response.Data
 import com.example.kienldmbtvn.data.network.service.AiArtService
+import com.example.kienldmbtvn.data.params.AiArtParams
 import com.example.kienldmbtvn.data.style.StyleApiService
 import com.example.kienldmbtvn.data.utils.FileUtils
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -33,8 +34,8 @@ class AiArtRepositoryImpl(
             val imageBitmapResized = FileUtils.uriToResizedBitmap(
                 context,
                 params.imageUri,
-                com.example.kienldmbtvn.data.network.consts.ServiceConstants.RequestConstants.MAX_IMAGE_PIXEL,
-                com.example.kienldmbtvn.data.network.consts.ServiceConstants.RequestConstants.MIN_IMAGE_PIXEL
+                RequestConstants.MAX_IMAGE_PIXEL,
+                RequestConstants.MIN_IMAGE_PIXEL
             )
             Log.d(TAG, "genArtAi: imageResized ${imageBitmapResized.config?.name}")
             val imageFile = FileUtils.saveBitmapToCache(
