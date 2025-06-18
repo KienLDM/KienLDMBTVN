@@ -1,7 +1,6 @@
 package com.example.kienldmbtvn.ui.style
 
 import android.net.Uri
-import com.example.kienldmbtvn.base.BaseUIState
 import com.example.kienldmbtvn.data.network.response.CategoryItem
 import com.example.kienldmbtvn.data.network.response.StyleItem
 
@@ -18,5 +17,5 @@ data class StyleUiState(
 
     val prompt: String = "",
     val imageUrl: Uri? = null,
-    val generatingState: BaseUIState<String> = BaseUIState.Idle
+    val generatingState: StyleDataState<String> = StyleDataState.Idle
 )

@@ -24,7 +24,6 @@ fun StyleScreen(
 
     StyleContents(
         imageUri = imageUri,
-        imageUrl = "",
         navController = navController,
         viewModel = viewModel,
         isImageSelected = isImageSelected,

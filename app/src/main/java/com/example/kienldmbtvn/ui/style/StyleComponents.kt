@@ -50,7 +50,9 @@ fun CommonButton(
     textContent: Int,
     isEnabled: Boolean = true,
     isLoading: Boolean = false,
-    onGenerate: () -> Unit,
+    isStyleScreen: Boolean = false,
+    onGenerate: () -> Unit = {},
+    onDownload: () -> Unit = {},
 ) {
     val backgroundModifier = if (isEnabled && !isLoading) {
         Modifier.background(
@@ -71,7 +73,7 @@ fun CommonButton(
             .padding(top = 30.dp)
             .then(backgroundModifier)
             .clip(RoundedCornerShape(8.dp)),
-        onClick = onGenerate,
+        onClick = if (isStyleScreen) onGenerate else onDownload,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,
             contentColor = Color.White,

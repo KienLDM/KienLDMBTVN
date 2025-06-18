@@ -5,15 +5,14 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.kienldmbtvn.base.BaseUIState
-import com.example.kienldmbtvn.data.network.response.CategoryItem
-import com.example.kienldmbtvn.data.network.response.StyleItem
-import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.AiArtRepository
 import com.example.kienldmbtvn.data.exception.AiArtException
 import com.example.kienldmbtvn.data.exception.ErrorReason
 import com.example.kienldmbtvn.data.network.consts.ServiceConstants
+import com.example.kienldmbtvn.data.network.response.CategoryItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.data.params.AiArtParams
+import com.example.kienldmbtvn.data.style.StyleRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -67,7 +66,6 @@ class StyleViewModel(
                             styleError = "Network error: ${error.message ?: "Unknown error"}"
                         )
                     }
-                    Log.d("StyleViewModel", "Network error: ${error.message}")
                 }
         }
     }
@@ -128,19 +126,19 @@ class StyleViewModel(
 
     fun generateImage(context: Context, onSuccess: (resultUrl: String) -> Unit) {
         updateState {
-            it.copy(generatingState = BaseUIState.Loading)
+            it.copy(generatingState = StyleDataState.Loading)
         }
         viewModelScope.launch {
             val uiStateValue = uiState.value
             if (uiStateValue.imageUrl == null) {
                 updateState {
-                    it.copy(generatingState = BaseUIState.Error("Image is required"))
+                    it.copy(generatingState = StyleDataState.Error("Image is required"))
                 }
                 return@launch
             }
             if (uiStateValue.selectedStyle == null) {
                 updateState {
-                    it.copy(generatingState = BaseUIState.Error("Style is required"))
+                    it.copy(generatingState = StyleDataState.Error("Style is required"))
                 }
                 return@launch
             }
@@ -156,11 +154,11 @@ class StyleViewModel(
             genResult.fold(
                 onSuccess = { fileUrl ->
                     updateState {
-                        it.copy(generatingState = BaseUIState.Success(fileUrl))
+                        it.copy(generatingState = StyleDataState.Success(fileUrl))
                     }
                     onSuccess(fileUrl)
                     updateState {
-                        it.copy(generatingState = BaseUIState.Idle)
+                        it.copy(generatingState = StyleDataState.Idle)
                     }
                 },
                 onFailure = { error ->
@@ -187,10 +185,17 @@ class StyleViewModel(
                         }
                     }
                     updateState {
-                        it.copy(generatingState = BaseUIState.Error(message))
+                        it.copy(generatingState = StyleDataState.Error(message))
                     }
                 }
             )
         }
     }
+}
+
+sealed class StyleDataState<out T> {
+    object Idle : StyleDataState<Nothing>()
+    object Loading : StyleDataState<Nothing>()
+    data class Success<out T>(val data: T) : StyleDataState<T>()
+    data class Error(val message: String) : StyleDataState<Nothing>()
 }
