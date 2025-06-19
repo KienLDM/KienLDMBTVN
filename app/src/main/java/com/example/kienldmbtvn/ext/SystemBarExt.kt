@@ -12,7 +12,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 import com.example.kienldmbtvn.enumclass.TypeInsets
 
-internal fun Activity.hideSystemBar(
+internal fun Activity.setStatusBarVisibility(
     hideStatusBar: Boolean = true,
     hideNavigationBar: Boolean = true,
     isLightStatusBar: Boolean = true,

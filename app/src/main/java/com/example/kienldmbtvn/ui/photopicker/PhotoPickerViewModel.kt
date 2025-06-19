@@ -1,42 +1,38 @@
 package com.example.kienldmbtvn.ui.photopicker
 
 import android.net.Uri
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.example.kienldmbtvn.base.BaseViewModel
 import kotlinx.coroutines.launch
 
-class PhotoPickerViewModel(private val repository: PhotoRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow<PhotoUiState>(PhotoUiState.Loading)
-    val uiState: StateFlow<PhotoUiState> = _uiState
+class PhotoPickerViewModel(private val repository: PhotoRepository) : BaseViewModel<PhotoUiState>(PhotoUiState.Loading) {
 
     fun loadPhotos() {
         viewModelScope.launch {
-            _uiState.value = PhotoUiState.Loading
+            setState(PhotoUiState.Loading)
             try {
                 val photos = repository.getPhotos()
-                _uiState.value = PhotoUiState.Success(photos)
+                setState(PhotoUiState.Success(photos))
             } catch (e: Exception) {
-                _uiState.value = PhotoUiState.Error("Failed to load photos: ${e.message}")
+                setState(PhotoUiState.Error("Failed to load photos: ${e.message}"))
             }
         }
     }
 
     fun togglePhotoSelection(photo: Photo) {
-        val currentState = _uiState.value
-        if (currentState is PhotoUiState.Success) {
-            val newSelected = if (currentState.selectedPhoto == photo) {
+        val current = currentState
+        if (current is PhotoUiState.Success) {
+            val newSelected = if (current.selectedPhoto == photo) {
                 null
             } else {
                 photo
             }
-            _uiState.value = currentState.copy(selectedPhoto = newSelected)
+            setState(current.copy(selectedPhoto = newSelected))
         }
     }
 
     fun getSelectedPhotoUri(): Uri? {
-        return when (val state = _uiState.value) {
+        return when (val state = currentState) {
             is PhotoUiState.Success -> state.selectedPhoto?.uri
             else -> null
         }
