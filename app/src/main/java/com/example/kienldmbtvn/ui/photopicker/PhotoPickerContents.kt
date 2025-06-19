@@ -108,7 +108,7 @@ fun PhotoPickerContents(
                     )
                 }
                 when (val state = uiState) {
-                    is PhotoUiState.Loading -> {
+                    is com.example.kienldmbtvn.base.BaseUIState.Loading -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -117,8 +117,8 @@ fun PhotoPickerContents(
                         }
                     }
 
-                    is PhotoUiState.Success -> {
-                        if (state.photos.isEmpty()) {
+                    is com.example.kienldmbtvn.base.BaseUIState.Success -> {
+                        if (state.data.photos.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
@@ -133,8 +133,8 @@ fun PhotoPickerContents(
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                items(state.photos.size) { index ->
-                                    val photo = state.photos[index]
+                                items(state.data.photos.size) { index ->
+                                    val photo = state.data.photos[index]
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -148,7 +148,7 @@ fun PhotoPickerContents(
                                             contentScale = ContentScale.Crop
                                         )
                                         Checkbox(
-                                            checked = state.selectedPhoto == photo,
+                                            checked = state.data.selectedPhoto == photo,
                                             onCheckedChange = { viewModel.togglePhotoSelection(photo) },
                                             modifier = Modifier
                                                 .align(Alignment.TopEnd)
@@ -161,7 +161,7 @@ fun PhotoPickerContents(
                         }
                     }
 
-                    is PhotoUiState.Error -> {
+                    is com.example.kienldmbtvn.base.BaseUIState.Error -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -171,6 +171,16 @@ fun PhotoPickerContents(
                                 style = LocalCustomTypography.current.Title.bold,
                                 color = LocalCustomColors.current.errorBackgroundColor
                             )
+                        }
+                    }
+
+                    is com.example.kienldmbtvn.base.BaseUIState.Idle -> {
+                        // Handle idle state - could show empty state or trigger loading
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(R.string.no_photos_found))
                         }
                     }
                 }

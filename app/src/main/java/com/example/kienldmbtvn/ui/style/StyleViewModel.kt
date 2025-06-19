@@ -3,29 +3,37 @@ package com.example.kienldmbtvn.ui.style
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kienldmbtvn.base.BaseViewModel
 import com.example.kienldmbtvn.base.BaseUIState
-import com.example.kienldmbtvn.data.network.response.CategoryItem
-import com.example.kienldmbtvn.data.network.response.StyleItem
-import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.AiArtRepository
 import com.example.kienldmbtvn.data.exception.AiArtException
 import com.example.kienldmbtvn.data.exception.ErrorReason
 import com.example.kienldmbtvn.data.network.consts.ServiceConstants
+import com.example.kienldmbtvn.data.network.response.CategoryItem
+import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.data.params.AiArtParams
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import com.example.kienldmbtvn.data.style.StyleRepository
 import kotlinx.coroutines.launch
+
+data class StyleData(
+    val styles: List<StyleItem> = emptyList(),
+    val selectedStyle: StyleItem? = null,
+    val categories: List<CategoryItem> = emptyList(),
+    val selectedCategory: CategoryItem? = null,
+    val prompt: String = "",
+    val imageUrl: Uri? = null,
+    val isStyleLoading: Boolean = false,
+    val styleError: String? = null,
+    val isCategoryLoading: Boolean = false,
+    val categoryError: String? = null,
+    val generatingState: BaseUIState<String> = BaseUIState.Idle
+)
 
 class StyleViewModel(
     private val styleRepository: StyleRepository,
     private val aiArtRepository: AiArtRepository
-) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(StyleUiState())
-    val uiState: StateFlow<StyleUiState> = _uiState
+) : BaseViewModel<BaseUIState<StyleData>>(BaseUIState.Success(StyleData())) {
 
     private var allStyles: List<StyleItem> = emptyList()
 
@@ -34,50 +42,59 @@ class StyleViewModel(
         fetchCategories()
     }
 
-    private fun updateState(update: (StyleUiState) -> StyleUiState) {
-        _uiState.update(update)
+    private fun updateStyleData(update: (StyleData) -> StyleData) {
+        val currentState = uiState.value
+        if (currentState is BaseUIState.Success) {
+            updateState { BaseUIState.Success(update(currentState.data)) }
+        }
+    }
+
+    private fun getCurrentData(): StyleData? {
+        return when (val state = uiState.value) {
+            is BaseUIState.Success -> state.data
+            else -> null
+        }
     }
 
     fun updatePrompt(newPrompt: String) {
-        updateState { it.copy(prompt = newPrompt) }
+        updateStyleData { it.copy(prompt = newPrompt) }
     }
 
     fun updateImageUrl(imageUri: Uri?) {
-        updateState { it.copy(imageUrl = imageUri) }
+        updateStyleData { it.copy(imageUrl = imageUri) }
     }
 
     fun fetchStyles() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isStyleLoading = true) }
+            updateStyleData { it.copy(isStyleLoading = true) }
             styleRepository.getStyles()
                 .onSuccess { styles ->
                     allStyles = styles
-                    _uiState.update {
-                        it.copy(
-                            styles = filterStylesByCategory(it.selectedCategory, styles),
+                    updateStyleData { currentData ->
+                        currentData.copy(
+                            styles = filterStylesByCategory(currentData.selectedCategory, styles),
                             isStyleLoading = false,
                             styleError = null
                         )
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update {
+                    updateStyleData {
                         it.copy(
                             isStyleLoading = false,
                             styleError = "Network error: ${error.message ?: "Unknown error"}"
                         )
                     }
-                    Log.d("StyleViewModel", "Network error: ${error.message}")
                 }
         }
     }
 
     fun fetchCategories() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isCategoryLoading = true) }
+            updateStyleData { it.copy(isCategoryLoading = true) }
             styleRepository.getItems()
                 .onSuccess { categories ->
-                    _uiState.update {
+                    updateStyleData {
                         it.copy(
                             categories = categories,
                             isCategoryLoading = false,
@@ -86,7 +103,7 @@ class StyleViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update {
+                    updateStyleData {
                         it.copy(
                             isCategoryLoading = false,
                             categoryError = "Network error: ${error.message ?: "Unknown error"}"
@@ -108,17 +125,17 @@ class StyleViewModel(
     }
 
     fun selectStyle(style: StyleItem) {
-        _uiState.update { it.copy(selectedStyle = style) }
+        updateStyleData { it.copy(selectedStyle = style) }
     }
 
     fun selectCategory(category: CategoryItem) {
-        _uiState.update { currentState ->
+        updateStyleData { currentData ->
             val filteredStyles = filterStylesByCategory(category, allStyles)
-            currentState.copy(
+            currentData.copy(
                 selectedCategory = category,
                 styles = filteredStyles,
-                selectedStyle = if (filteredStyles.contains(currentState.selectedStyle)) {
-                    currentState.selectedStyle
+                selectedStyle = if (filteredStyles.contains(currentData.selectedStyle)) {
+                    currentData.selectedStyle
                 } else {
                     null
                 }
@@ -127,39 +144,39 @@ class StyleViewModel(
     }
 
     fun generateImage(context: Context, onSuccess: (resultUrl: String) -> Unit) {
-        updateState {
+        updateStyleData {
             it.copy(generatingState = BaseUIState.Loading)
         }
         viewModelScope.launch {
-            val uiStateValue = uiState.value
-            if (uiStateValue.imageUrl == null) {
-                updateState {
+            val currentData = getCurrentData()
+            if (currentData?.imageUrl == null) {
+                updateStyleData {
                     it.copy(generatingState = BaseUIState.Error("Image is required"))
                 }
                 return@launch
             }
-            if (uiStateValue.selectedStyle == null) {
-                updateState {
+            if (currentData.selectedStyle == null) {
+                updateStyleData {
                     it.copy(generatingState = BaseUIState.Error("Style is required"))
                 }
                 return@launch
             }
             val genResult = aiArtRepository.genArtAi(
                 params = AiArtParams(
-                    prompt = uiStateValue.prompt,
-                    styleId = uiStateValue.selectedStyle.id,
-                    positivePrompt = uiStateValue.prompt,
-                    negativePrompt = uiStateValue.prompt,
-                    imageUri = uiStateValue.imageUrl
+                    prompt = currentData.prompt,
+                    styleId = currentData.selectedStyle.id,
+                    positivePrompt = currentData.prompt,
+                    negativePrompt = currentData.prompt,
+                    imageUri = currentData.imageUrl
                 )
             )
             genResult.fold(
                 onSuccess = { fileUrl ->
-                    updateState {
+                    updateStyleData {
                         it.copy(generatingState = BaseUIState.Success(fileUrl))
                     }
                     onSuccess(fileUrl)
-                    updateState {
+                    updateStyleData {
                         it.copy(generatingState = BaseUIState.Idle)
                     }
                 },
@@ -186,7 +203,7 @@ class StyleViewModel(
                             error.message ?: ServiceConstants.UNKNOWN_ERROR_MESSAGE
                         }
                     }
-                    updateState {
+                    updateStyleData {
                         it.copy(generatingState = BaseUIState.Error(message))
                     }
                 }
