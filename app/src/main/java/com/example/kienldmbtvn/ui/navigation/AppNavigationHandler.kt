@@ -7,10 +7,6 @@ import androidx.navigation.NavController
 object AppNavigationHandler {
     const val IMAGE_URI_KEY = "imageUri"
 
-    fun navigateToPhotoPicker(navController: NavController) {
-        navController.navigate(AppNavRoutes.PhotoPicker.route)
-    }
-
     fun navigateToStyle(navController: NavController) {
         navController.navigate(AppNavRoutes.Style.route)
     }

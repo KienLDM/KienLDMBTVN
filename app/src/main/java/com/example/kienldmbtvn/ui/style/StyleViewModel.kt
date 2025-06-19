@@ -64,6 +64,11 @@ class StyleViewModel(
         updateStyleData { it.copy(imageUrl = imageUri) }
     }
 
+    fun setImageUri(uriString: String) {
+        val uri = Uri.parse(uriString)
+        updateImageUrl(uri)
+    }
+
     fun fetchStyles() {
         viewModelScope.launch {
             updateStyleData { it.copy(isStyleLoading = true) }

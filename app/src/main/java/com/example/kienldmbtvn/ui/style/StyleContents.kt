@@ -47,6 +47,13 @@ import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.kienldmbtvn.ui.photopicker.activity.PhotoPickerActivity
+import com.example.kienldmbtvn.ui.style.StyleUiState
+import com.example.kienldmbtvn.ui.style.StyleViewModel
 
 @Composable
 fun StyleContents(
@@ -134,7 +141,7 @@ fun StyleContents(
                     styleData = currentState.data,
                     text = text,
                     onTextChanged = { text = it },
-                    imageUri = imageUri,
+                    imageUri = imageUri.toString(),
                     isImageSelected = isImageSelected,
                     navController = navController,
                     viewModel = viewModel,
@@ -156,17 +163,28 @@ fun StyleContents(
 
 @Composable
 private fun StyleSuccessContent(
-    modifier: Modifier,
-    styleData: StyleData,
+    modifier: Modifier = Modifier,
     text: String,
     onTextChanged: (String) -> Unit,
-    imageUri: Uri,
+    imageUri: String?,
     isImageSelected: Boolean,
+    styleData: StyleData,
     navController: NavHostController,
     viewModel: StyleViewModel,
     context: android.content.Context,
     snackbarHostState: SnackbarHostState
 ) {
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val selectedImageUri = result.data?.getStringExtra(PhotoPickerActivity.EXTRA_SELECTED_IMAGE_URI)
+            selectedImageUri?.let { uri ->
+                viewModel.setImageUri(uri)
+            }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -228,12 +246,12 @@ private fun StyleSuccessContent(
                         shape = RoundedCornerShape(16.dp)
                     )
             ) {
-                if (isImageSelected) {
+                if (isImageSelected || styleData.imageUrl != null) {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         AsyncImage(
-                            model = imageUri,
+                            model = styleData.imageUrl,
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxSize()
@@ -249,7 +267,10 @@ private fun StyleSuccessContent(
                                 .background(LocalCustomColors.current.primaryBorderColor.copy(0.7f))
                         ) {
                             IconButton(
-                                onClick = { AppNavigationHandler.navigateToPhotoPicker(navController) },
+                                onClick = { 
+                                    val intent = Intent(context, PhotoPickerActivity::class.java)
+                                    photoPickerLauncher.launch(intent)
+                                },
                             ) {
                                 Icon(
                                     painterResource(R.drawable.ic_rechoose_image),
@@ -263,7 +284,8 @@ private fun StyleSuccessContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .clickable {
-                                AppNavigationHandler.navigateToPhotoPicker(navController)
+                                val intent = Intent(context, PhotoPickerActivity::class.java)
+                                photoPickerLauncher.launch(intent)
                             },
                         contentAlignment = Alignment.Center
                     ) {

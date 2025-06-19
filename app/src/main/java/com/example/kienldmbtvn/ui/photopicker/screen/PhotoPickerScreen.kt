@@ -1,17 +1,189 @@
 package com.example.kienldmbtvn.ui.photopicker.screen
 
+import android.Manifest
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.rememberAsyncImagePainter
+import com.example.kienldmbtvn.R
+import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
+import com.example.kienldmbtvn.ui.theme.LocalCustomColors
+import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PhotoPickerScreen(navController: NavHostController) {
-    PhotoPickerContents(
-        onImageSelected = { selectedUri ->
-            AppNavigationHandler.setImageUriAndNavigateBack(navController, selectedUri)
-        },
-        onCancel = {
-            AppNavigationHandler.goBack(navController)
+fun PhotoPickerScreen(
+    onImageSelected: (Uri?) -> Unit,
+    onCancel: () -> Unit,
+    viewModel: PhotoPickerViewModel = koinViewModel(),
+) {
+    val permission = if (android.os.Build.VERSION.SDK_INT >= 33) {
+        Manifest.permission.READ_MEDIA_IMAGES
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+
+    var hasPermission by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasPermission = isGranted
+        if (isGranted) {
+            viewModel.loadPhotos()
         }
-    )
+    }
+
+    LaunchedEffect(Unit) {
+        permissionLauncher.launch(permission)
+    }
+
+    when {
+        !hasPermission -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = stringResource(R.string.ask_for_permission),
+                    style = LocalCustomTypography.current.Title.bold
+                )
+            }
+        }
+
+        else -> {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 50.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onCancel) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_close_photo_picker),
+                            contentDescription = null,
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(R.string.next),
+                        style = LocalCustomTypography.current.ButtonTypoGraphy.bold,
+                        modifier = Modifier.clickable {
+                            val selectedPhotoUri = viewModel.getSelectedPhotoUri()
+                            onImageSelected(selectedPhotoUri)
+                        }
+                    )
+                }
+                
+                when (val state = uiState) {
+                    is com.example.kienldmbtvn.base.BaseUIState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    is com.example.kienldmbtvn.base.BaseUIState.Success -> {
+                        if (state.data.photos.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(stringResource(R.string.no_photos_found))
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(state.data.photos.size) { index ->
+                                    val photo = state.data.photos[index]
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .aspectRatio(1f)
+                                            .clickable { viewModel.togglePhotoSelection(photo) }
+                                    ) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(photo.uri),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop
+                                        )
+                                        Checkbox(
+                                            checked = state.data.selectedPhoto == photo,
+                                            onCheckedChange = { viewModel.togglePhotoSelection(photo) },
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(4.dp)
+                                                .size(24.dp),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    is com.example.kienldmbtvn.base.BaseUIState.Error -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = state.message,
+                                style = LocalCustomTypography.current.Title.bold,
+                                color = LocalCustomColors.current.errorBackgroundColor
+                            )
+                        }
+                    }
+
+                    is com.example.kienldmbtvn.base.BaseUIState.Idle -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(R.string.no_photos_found))
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
