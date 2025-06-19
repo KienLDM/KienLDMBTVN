@@ -1,8 +1,9 @@
-package com.example.kienldmbtvn.ui.photopicker
+package com.example.kienldmbtvn.ui.photopicker.viewmodel
 
 import android.content.ContentUris
 import android.content.Context
 import android.provider.MediaStore
+import com.example.kienldmbtvn.ui.photopicker.Photo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

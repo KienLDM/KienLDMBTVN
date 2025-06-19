@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.kienldmbtvn.ui.photopicker.PhotoPickerScreen
 import com.example.kienldmbtvn.ui.result.ResultScreen
 import com.example.kienldmbtvn.ui.style.StyleScreen
 import java.net.URLDecoder
@@ -20,10 +19,6 @@ fun AppNavHost() {
     ) {
         composable(AppNavRoutes.Style.route) {
             StyleScreen(navController = navController)
-        }
-
-        composable(AppNavRoutes.PhotoPicker.route) {
-            PhotoPickerScreen(navController = navController)
         }
 
         composable(

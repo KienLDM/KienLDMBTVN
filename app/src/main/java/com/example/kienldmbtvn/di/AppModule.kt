@@ -9,7 +9,7 @@ import com.example.kienldmbtvn.data.style.StyleApiService
 import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.style.StyleRepositoryImpl
 import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
-import com.example.kienldmbtvn.ui.photopicker.PhotoRepository
+import com.example.kienldmbtvn.ui.photopicker.viewmodel.PhotoRepository
 import com.example.kienldmbtvn.ui.style.StyleViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel

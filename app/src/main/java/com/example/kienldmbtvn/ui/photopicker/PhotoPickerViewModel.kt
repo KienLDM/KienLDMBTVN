@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.example.kienldmbtvn.base.BaseViewModel
 import com.example.kienldmbtvn.base.BaseUIState
+import com.example.kienldmbtvn.ui.photopicker.viewmodel.PhotoRepository
 import kotlinx.coroutines.launch
 
 data class PhotoData(

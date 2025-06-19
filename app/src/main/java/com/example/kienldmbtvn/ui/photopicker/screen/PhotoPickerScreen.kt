@@ -1,6 +1,7 @@
-package com.example.kienldmbtvn.ui.photopicker
+package com.example.kienldmbtvn.ui.photopicker.screen
 
 import android.Manifest
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -35,21 +36,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
+import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PhotoPickerContents(
-    modifier: Modifier = Modifier,
-    navController: NavController,
+fun PhotoPickerScreen(
+    onImageSelected: (Uri?) -> Unit,
+    onCancel: () -> Unit,
     viewModel: PhotoPickerViewModel = koinViewModel(),
 ) {
-
     val permission = if (android.os.Build.VERSION.SDK_INT >= 33) {
         Manifest.permission.READ_MEDIA_IMAGES
     } else {
@@ -91,7 +90,7 @@ fun PhotoPickerContents(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { AppNavigationHandler.goBack(navController) }) {
+                    IconButton(onClick = onCancel) {
                         Icon(
                             painter = painterResource(R.drawable.ic_close_photo_picker),
                             contentDescription = null,
@@ -103,10 +102,11 @@ fun PhotoPickerContents(
                         style = LocalCustomTypography.current.ButtonTypoGraphy.bold,
                         modifier = Modifier.clickable {
                             val selectedPhotoUri = viewModel.getSelectedPhotoUri()
-                            AppNavigationHandler.setImageUriAndNavigateBack(navController, selectedPhotoUri)
+                            onImageSelected(selectedPhotoUri)
                         }
                     )
                 }
+                
                 when (val state = uiState) {
                     is com.example.kienldmbtvn.base.BaseUIState.Loading -> {
                         Box(
@@ -175,7 +175,6 @@ fun PhotoPickerContents(
                     }
 
                     is com.example.kienldmbtvn.base.BaseUIState.Idle -> {
-                        // Handle idle state - could show empty state or trigger loading
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
