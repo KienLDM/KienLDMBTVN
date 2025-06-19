@@ -10,6 +10,7 @@ import com.example.kienldmbtvn.data.style.StyleRepository
 import com.example.kienldmbtvn.data.style.StyleRepositoryImpl
 import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
 import com.example.kienldmbtvn.ui.photopicker.PhotoRepository
+import com.example.kienldmbtvn.ui.result.ResultViewModel
 import com.example.kienldmbtvn.ui.style.StyleViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -30,6 +31,7 @@ internal val repositoryModule = module {
 internal val viewModelModule = module {
     viewModel { StyleViewModel(get(), get()) }
     viewModel { PhotoPickerViewModel(get()) }
+    viewModel { ResultViewModel() }
 }
 
 val appModule = listOf(

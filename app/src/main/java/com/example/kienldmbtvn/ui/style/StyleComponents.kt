@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,6 +39,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.kienldmbtvn.R
 import com.example.kienldmbtvn.data.network.response.CategoryItem
 import com.example.kienldmbtvn.data.network.response.StyleItem
@@ -262,6 +268,45 @@ fun StyleCard(
 }
 
 @Composable
-fun FloatingLoadingState(modifier: Modifier = Modifier) {
+fun FloatingLoadingLottieAnimation(
+    modifier: Modifier = Modifier,
+    text: Int,
+) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.lottie_loading))
 
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever,
+        isPlaying = true
+    )
+
+    Box(
+        modifier = Modifier
+            .size(height = 140.dp, width = 160.dp)
+            .background(
+                color = Color.White,
+                shape = RoundedCornerShape(30.dp)
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.Center),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            LottieAnimation(
+                modifier = Modifier.size(85.dp),
+                composition = composition,
+                progress = { progress },
+            )
+
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = stringResource(text),
+                style = LocalCustomTypography.current.ButtonTypoGraphy.bold,
+                color = Color.Black
+            )
+        }
+    }
 }
