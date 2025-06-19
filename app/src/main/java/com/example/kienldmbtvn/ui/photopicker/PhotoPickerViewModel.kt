@@ -1,50 +1,46 @@
 package com.example.kienldmbtvn.ui.photopicker
 
 import android.net.Uri
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.example.kienldmbtvn.base.BaseViewModel
+import com.example.kienldmbtvn.base.BaseUIState
 import kotlinx.coroutines.launch
 
-class PhotoPickerViewModel(private val repository: PhotoRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow<PhotoUiState>(PhotoUiState.Loading)
-    val uiState: StateFlow<PhotoUiState> = _uiState
+data class PhotoData(
+    val photos: List<Photo> = emptyList(),
+    val selectedPhoto: Photo? = null
+)
+
+class PhotoPickerViewModel(private val repository: PhotoRepository) : BaseViewModel<BaseUIState<PhotoData>>(BaseUIState.Loading) {
 
     fun loadPhotos() {
         viewModelScope.launch {
-            _uiState.value = PhotoUiState.Loading
+            updateState { BaseUIState.Loading }
             try {
                 val photos = repository.getPhotos()
-                _uiState.value = PhotoUiState.Success(photos)
+                updateState { BaseUIState.Success(PhotoData(photos = photos)) }
             } catch (e: Exception) {
-                _uiState.value = PhotoUiState.Error("Failed to load photos: ${e.message}")
+                updateState { BaseUIState.Error("Failed to load photos: ${e.message}") }
             }
         }
     }
 
     fun togglePhotoSelection(photo: Photo) {
-        val currentState = _uiState.value
-        if (currentState is PhotoUiState.Success) {
-            val newSelected = if (currentState.selectedPhoto == photo) {
+        val current = uiState.value
+        if (current is BaseUIState.Success) {
+            val newSelected = if (current.data.selectedPhoto == photo) {
                 null
             } else {
                 photo
             }
-            _uiState.value = currentState.copy(selectedPhoto = newSelected)
+            updateState { BaseUIState.Success(current.data.copy(selectedPhoto = newSelected)) }
         }
     }
 
     fun getSelectedPhotoUri(): Uri? {
-        return when (val state = _uiState.value) {
-            is PhotoUiState.Success -> state.selectedPhoto?.uri
+        return when (val state = uiState.value) {
+            is BaseUIState.Success -> state.data.selectedPhoto?.uri
             else -> null
         }
     }
-}
-
-sealed class PhotoUiState {
-    object Loading : PhotoUiState()
-    data class Success(val photos: List<Photo>, val selectedPhoto: Photo? = null) : PhotoUiState()
-    data class Error(val message: String) : PhotoUiState()
 }

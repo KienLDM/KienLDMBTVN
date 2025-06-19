@@ -72,12 +72,16 @@ fun StyleContents(
         val noInternetMessage = stringResource(R.string.no_internet)
         val context = LocalContext.current
 
-        LaunchedEffect(uiState.styleError) {
-            uiState.styleError?.let {
-                snackbarHostState.showSnackbar(
-                    message = noInternetMessage,
-                    withDismissAction = true
-                )
+        val currentState = uiState
+        
+        LaunchedEffect(currentState) {
+            if (currentState is BaseUIState.Success) {
+                currentState.data.styleError?.let {
+                    snackbarHostState.showSnackbar(
+                        message = noInternetMessage,
+                        withDismissAction = true
+                    )
+                }
             }
         }
 
@@ -103,12 +107,72 @@ fun StyleContents(
             }
         )
 
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(27.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        when (currentState) {
+            is BaseUIState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is BaseUIState.Error -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = currentState.message,
+                        color = LocalCustomColors.current.errorBackgroundColor,
+                        style = LocalCustomTypography.current.Title.bold
+                    )
+                }
+            }
+            is BaseUIState.Success -> {
+                StyleSuccessContent(
+                    modifier = modifier,
+                    styleData = currentState.data,
+                    text = text,
+                    onTextChanged = { text = it },
+                    imageUri = imageUri,
+                    isImageSelected = isImageSelected,
+                    navController = navController,
+                    viewModel = viewModel,
+                    context = context,
+                    snackbarHostState = snackbarHostState
+                )
+            }
+            is BaseUIState.Idle -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StyleSuccessContent(
+    modifier: Modifier,
+    styleData: StyleData,
+    text: String,
+    onTextChanged: (String) -> Unit,
+    imageUri: Uri,
+    isImageSelected: Boolean,
+    navController: NavHostController,
+    viewModel: StyleViewModel,
+    context: android.content.Context,
+    snackbarHostState: SnackbarHostState
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(27.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,7 +180,7 @@ fun StyleContents(
             ) {
                 OutlinedTextField(
                     value = text,
-                    onValueChange = { text = it },
+                    onValueChange = onTextChanged,
                     placeholder = {
                         Text(
                             text = stringResource(id = R.string.style_prompt_entry),
@@ -143,7 +207,7 @@ fun StyleContents(
                 )
 
                 IconButton(
-                    onClick = { text = "" },
+                    onClick = { onTextChanged("") },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                 ) {
@@ -234,27 +298,27 @@ fun StyleContents(
             )
 
             CategoryLazyRow(
-                isLoading = uiState.isCategoryLoading,
-                categoryError = uiState.categoryError,
-                categories = uiState.categories,
-                selectedCategoryId = uiState.selectedCategory?.id,
+                isLoading = styleData.isCategoryLoading,
+                categoryError = styleData.categoryError,
+                categories = styleData.categories,
+                selectedCategoryId = styleData.selectedCategory?.id,
                 onCategorySelected = { viewModel.selectCategory(it) }
             )
 
             StyleLazyRow(
-                isLoading = uiState.isStyleLoading,
-                styleError = uiState.styleError,
-                styles = uiState.styles,
-                selectedStyle = uiState.selectedStyle,
+                isLoading = styleData.isStyleLoading,
+                styleError = styleData.styleError,
+                styles = styleData.styles,
+                selectedStyle = styleData.selectedStyle,
                 onStyleSelected = { viewModel.selectStyle(it) }
             )
 
             CommonButton(
                 textContent = R.string.style_generate,
-                isEnabled = uiState.selectedStyle != null,
-                isLoading = uiState.generatingState.isLoading(),
+                isEnabled = styleData.selectedStyle != null,
+                isLoading = styleData.generatingState.isLoading(),
                 onGenerate = {
-                    uiState.selectedStyle?.let {
+                    styleData.selectedStyle?.let {
                         viewModel.updatePrompt(text)
                         viewModel.generateImage(context = context) { resultUrl ->
                             AppNavigationHandler.navigateToResult(navController, resultUrl)
@@ -264,7 +328,7 @@ fun StyleContents(
             )
         }
         
-        if (uiState.generatingState.isLoading()) {
+        if (styleData.generatingState.isLoading()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -289,14 +353,13 @@ fun StyleContents(
             }
         }
         
-        if (uiState.generatingState.isError()) {
-            LaunchedEffect(uiState.generatingState) {
-                val errorMessage = (uiState.generatingState as BaseUIState.Error).message
+        if (styleData.generatingState.isError()) {
+            LaunchedEffect(styleData.generatingState) {
+                val errorMessage = (styleData.generatingState as BaseUIState.Error).message
                 snackbarHostState.showSnackbar(
                     message = errorMessage,
                     withDismissAction = true
                 )
             }
         }
-    }
 }
