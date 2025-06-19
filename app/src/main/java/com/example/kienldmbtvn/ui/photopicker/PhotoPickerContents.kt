@@ -87,7 +87,7 @@ fun PhotoPickerContents(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                        .padding(top = 10.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

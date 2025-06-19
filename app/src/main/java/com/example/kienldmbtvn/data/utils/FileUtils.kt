@@ -1,10 +1,14 @@
 package com.example.kienldmbtvn.data.utils
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
 import androidx.core.graphics.scale
 import com.example.kienldmbtvn.data.exception.AiArtException
 import com.example.kienldmbtvn.data.exception.ErrorReason
@@ -17,6 +21,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object FileUtils {
+    private const val TAG = "FileUtils"
+
     fun checkImageExtension(context: Context, uri: Uri): Boolean {
         val mimeType = context.contentResolver.getType(uri)
         return mimeType in listOf("image/jpeg", "image/jpg")
@@ -78,7 +84,78 @@ object FileUtils {
         return file
     }
 
-    suspend fun saveFileToStorage(fileUrl: String): Result<Unit> {
+    /**
+     * Modern implementation for downloading files that works with scoped storage on Android 10+
+     */
+    suspend fun downloadImageToGallery(context: Context, fileUrl: String): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "Starting download from URL: $fileUrl")
+                // Download the file first
+                val url = URL(fileUrl)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.connect()
+
+                Log.d(TAG, "Connection response code: ${connection.responseCode}")
+                if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                    Log.e(TAG, "HTTP request failed with code: ${connection.responseCode}")
+                    return@withContext Result.failure(AiArtException(ErrorReason.UnknownError))
+                }
+
+                val inputStream: InputStream = connection.inputStream
+                
+                // Use MediaStore for modern Android versions (10+)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    Log.d(TAG, "Using MediaStore API for Android 10+")
+                    val fileName = "AI_Art_${System.currentTimeMillis()}.jpg"
+                    
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/AI Art")
+                    }
+                    
+                    val contentResolver = context.contentResolver
+                    val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                    
+                    if (uri != null) {
+                        Log.d(TAG, "MediaStore URI created: $uri")
+                        contentResolver.openOutputStream(uri)?.use { outputStream ->
+                            val buffer = ByteArray(4096)
+                            var bytesRead: Int
+                            var totalBytes = 0
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                outputStream.write(buffer, 0, bytesRead)
+                                totalBytes += bytesRead
+                            }
+                            outputStream.flush()
+                            Log.d(TAG, "File saved successfully. Total bytes: $totalBytes")
+                        }
+                        
+                        inputStream.close()
+                        return@withContext Result.success(Unit)
+                    } else {
+                        Log.e(TAG, "Failed to create MediaStore URI")
+                        inputStream.close()
+                        return@withContext Result.failure(AiArtException(ErrorReason.UnknownError))
+                    }
+                } else {
+                    Log.d(TAG, "Using legacy storage for Android 9 and below")
+                    // Fallback for older Android versions
+                    return@withContext saveFileToStorageLegacy(fileUrl)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Download failed with exception", e)
+                e.printStackTrace()
+                return@withContext Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Legacy implementation - kept for backward compatibility
+     */
+    private suspend fun saveFileToStorageLegacy(fileUrl: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL(fileUrl)
@@ -114,5 +191,10 @@ object FileUtils {
                 return@withContext Result.failure(e)
             }
         }
+    }
+
+    @Deprecated("Use downloadImageToGallery instead for modern Android compatibility")
+    suspend fun saveFileToStorage(fileUrl: String): Result<Unit> {
+        return saveFileToStorageLegacy(fileUrl)
     }
 }

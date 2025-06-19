@@ -45,7 +45,7 @@ fun ResultScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     // Handle download state changes
     LaunchedEffect(uiState) {
         val currentState = uiState
@@ -55,10 +55,12 @@ fun ResultScreen(
                     snackbarHostState.showSnackbar("Photo downloaded successfully!")
                     viewModel.clearDownloadState()
                 }
+
                 is BaseUIState.Error -> {
                     snackbarHostState.showSnackbar(downloadState.message)
                     viewModel.clearDownloadState()
                 }
+
                 else -> {}
             }
         }
@@ -106,32 +108,23 @@ fun ResultScreen(
 
             // Download button with loading state
             val currentUiState = uiState
-            val isDownloading = currentUiState is BaseUIState.Success && 
-                               currentUiState.data.downloadState is BaseUIState.Loading
-            
+            val isDownloading = currentUiState is BaseUIState.Success &&
+                    currentUiState.data.downloadState is BaseUIState.Loading
+
             CommonButton(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 80.dp, start = 30.dp, end = 30.dp),
                 textContent = if (isDownloading) R.string.result_downloading_popup else R.string.result_download_photo,
-            ) { 
+            ) {
                 if (!isDownloading) {
                     viewModel.downloadPhoto(imageUrl)
                 }
             }
-            
-            // Loading indicator overlay
             if (isDownloading) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 90.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    FloatingLoadingLottieAnimation(
-                        text = R.string.result_downloading_popup
-                    )
-                }
+                FloatingLoadingLottieAnimation(
+                    text = R.string.result_downloading_popup
+                )
             }
         }
     }

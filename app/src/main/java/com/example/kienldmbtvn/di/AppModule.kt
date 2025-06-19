@@ -31,7 +31,7 @@ internal val repositoryModule = module {
 internal val viewModelModule = module {
     viewModel { StyleViewModel(get(), get()) }
     viewModel { PhotoPickerViewModel(get()) }
-    viewModel { ResultViewModel() }
+    viewModel { ResultViewModel(androidContext()) }
 }
 
 val appModule = listOf(
