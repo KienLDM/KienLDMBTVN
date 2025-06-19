@@ -1,6 +1,7 @@
-package com.example.kienldmbtvn.ui.photopicker
+package com.example.kienldmbtvn.ui.photopicker.screen
 
 import android.Manifest
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -35,10 +36,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.kienldmbtvn.R
-import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
+import com.example.kienldmbtvn.ui.photopicker.PhotoPickerViewModel
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
@@ -46,7 +46,8 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun PhotoPickerContents(
     modifier: Modifier = Modifier,
-    navController: NavController,
+    onImageSelected: (Uri?) -> Unit = {},
+    onCancel: () -> Unit = {},
     viewModel: PhotoPickerViewModel = koinViewModel(),
 ) {
 
@@ -91,7 +92,7 @@ fun PhotoPickerContents(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { AppNavigationHandler.goBack(navController) }) {
+                    IconButton(onClick = { onCancel() }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_close_photo_picker),
                             contentDescription = null,
@@ -103,7 +104,7 @@ fun PhotoPickerContents(
                         style = LocalCustomTypography.current.ButtonTypoGraphy.bold,
                         modifier = Modifier.clickable {
                             val selectedPhotoUri = viewModel.getSelectedPhotoUri()
-                            AppNavigationHandler.setImageUriAndNavigateBack(navController, selectedPhotoUri)
+                            onImageSelected(selectedPhotoUri)
                         }
                     )
                 }
