@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -39,6 +38,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.kienldmbtvn.R
 import com.example.kienldmbtvn.ui.navigation.AppNavigationHandler
+import com.example.kienldmbtvn.ui.style.FloatingLoadingLottieAnimation
 import com.example.kienldmbtvn.ui.theme.LocalCustomColors
 import com.example.kienldmbtvn.ui.theme.LocalCustomTypography
 import org.koin.androidx.compose.koinViewModel
@@ -87,7 +87,7 @@ fun PhotoPickerContents(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                        .padding(top = 10.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -113,7 +113,7 @@ fun PhotoPickerContents(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            FloatingLoadingLottieAnimation(text = R.string.loading)
                         }
                     }
 

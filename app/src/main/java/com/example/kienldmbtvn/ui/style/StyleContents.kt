@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import android.util.Log
 import com.example.kienldmbtvn.R
 import com.example.kienldmbtvn.base.BaseUIState
 import com.example.kienldmbtvn.data.network.response.StyleItem
@@ -113,7 +111,7 @@ fun StyleContents(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    FloatingLoadingLottieAnimation(text = R.string.loading)
                 }
             }
             is BaseUIState.Error -> {
@@ -147,7 +145,7 @@ fun StyleContents(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    FloatingLoadingLottieAnimation(text = R.string.loading)
                 }
             }
         }
@@ -338,16 +336,8 @@ private fun StyleSuccessContent(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(50.dp),
-                        color = LocalCustomColors.current.primaryTextColor,
-                        strokeWidth = 4.dp
-                    )
-                    Text(
-                        text = "Generating your AI art...",
-                        color = Color.White,
-                        style = LocalCustomTypography.current.PromptTypoGraphy.semiBold,
-                        modifier = Modifier.padding(top = 16.dp)
+                    FloatingLoadingLottieAnimation(
+                        text = R.string.style_generating_image_popup
                     )
                 }
             }

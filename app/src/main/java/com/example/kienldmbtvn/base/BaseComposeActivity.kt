@@ -13,7 +13,7 @@ abstract class BaseComposeActivity : AppCompatActivity(){
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         setStatusBarVisibility(
-            hideStatusBar = true,
+            hideStatusBar = false,
             hideNavigationBar = true,
             isLightStatusBar = false
         )
