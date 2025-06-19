@@ -3,8 +3,8 @@ package com.example.kienldmbtvn.ui.style
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kienldmbtvn.base.BaseViewModel
 import com.example.kienldmbtvn.data.AiArtRepository
 import com.example.kienldmbtvn.data.exception.AiArtException
 import com.example.kienldmbtvn.data.exception.ErrorReason
@@ -13,28 +13,18 @@ import com.example.kienldmbtvn.data.network.response.CategoryItem
 import com.example.kienldmbtvn.data.network.response.StyleItem
 import com.example.kienldmbtvn.data.params.AiArtParams
 import com.example.kienldmbtvn.data.style.StyleRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class StyleViewModel(
     private val styleRepository: StyleRepository,
     private val aiArtRepository: AiArtRepository
-) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(StyleUiState())
-    val uiState: StateFlow<StyleUiState> = _uiState
+) : BaseViewModel<StyleUiState>(StyleUiState()) {
 
     private var allStyles: List<StyleItem> = emptyList()
 
     init {
         fetchStyles()
         fetchCategories()
-    }
-
-    private fun updateState(update: (StyleUiState) -> StyleUiState) {
-        _uiState.update(update)
     }
 
     fun updatePrompt(newPrompt: String) {
@@ -47,11 +37,11 @@ class StyleViewModel(
 
     fun fetchStyles() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isStyleLoading = true) }
+            updateState { it.copy(isStyleLoading = true) }
             styleRepository.getStyles()
                 .onSuccess { styles ->
                     allStyles = styles
-                    _uiState.update {
+                    updateState {
                         it.copy(
                             styles = filterStylesByCategory(it.selectedCategory, styles),
                             isStyleLoading = false,
@@ -60,7 +50,7 @@ class StyleViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update {
+                    updateState {
                         it.copy(
                             isStyleLoading = false,
                             styleError = "Network error: ${error.message ?: "Unknown error"}"
@@ -72,10 +62,10 @@ class StyleViewModel(
 
     fun fetchCategories() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isCategoryLoading = true) }
+            updateState { it.copy(isCategoryLoading = true) }
             styleRepository.getItems()
                 .onSuccess { categories ->
-                    _uiState.update {
+                    updateState {
                         it.copy(
                             categories = categories,
                             isCategoryLoading = false,
@@ -84,7 +74,7 @@ class StyleViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update {
+                    updateState {
                         it.copy(
                             isCategoryLoading = false,
                             categoryError = "Network error: ${error.message ?: "Unknown error"}"
@@ -106,11 +96,11 @@ class StyleViewModel(
     }
 
     fun selectStyle(style: StyleItem) {
-        _uiState.update { it.copy(selectedStyle = style) }
+        updateState { it.copy(selectedStyle = style) }
     }
 
     fun selectCategory(category: CategoryItem) {
-        _uiState.update { currentState ->
+        updateState { currentState ->
             val filteredStyles = filterStylesByCategory(category, allStyles)
             currentState.copy(
                 selectedCategory = category,
